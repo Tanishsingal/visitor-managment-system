@@ -14,7 +14,7 @@ const db_1 = require("../db");
 const client_1 = require("@prisma/client");
 const emailService_1 = require("../services/emailService");
 const smsService_1 = require("../services/smsService");
-const webSocketService_1 = require("../services/webSocketService");
+// import { sendNotification } from "../services/webSocketService";
 // import { requestVisit } from "../services/visitService";
 const requestVisit = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return yield db_1.db.visit.create({ data });
@@ -25,7 +25,7 @@ const approveVisit = (visitId) => __awaiter(void 0, void 0, void 0, function* ()
         data: { status: client_1.VisitStatus.APPROVED },
         include: { visitor: true },
     });
-    (0, webSocketService_1.sendNotification)(visit.visitorId, "Your visit has been approved!");
+    // sendNotification(visit.visitorId, "Your visit has been approved!");
     (0, emailService_1.sendEmail)(visit.visitor.email, "Visit Approved", "Your visit request has been approved.");
     (0, smsService_1.sendSMS)(visit.visitor.phone, "Your visit has been approved!");
     return visit;

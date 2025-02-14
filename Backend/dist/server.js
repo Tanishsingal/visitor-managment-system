@@ -1,25 +1,8 @@
 "use strict";
-// import express from "express";
-// import dotenv from "dotenv";
-// import cors from "cors";
-// import morgan from "morgan";
-// import visitorRoutes from "./routes/visitorRoutes";
-// import authRoutes from "./routes/authRoutes";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// dotenv.config();
-// const app = express();
-// app.use(express.json());
-// app.use(cors());
-// app.use(morgan("dev"));
-// app.use("/api/visitors", visitorRoutes);
-// app.use("/api/auth", authRoutes);
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));

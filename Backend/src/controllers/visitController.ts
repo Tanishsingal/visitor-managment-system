@@ -3,7 +3,7 @@ import {db} from "../db";
 import { VisitStatus } from "@prisma/client";
 import { sendEmail } from "../services/emailService";
 import { sendSMS } from "../services/smsService";
-import { sendNotification } from "../services/webSocketService";
+// import { sendNotification } from "../services/webSocketService";
 // import { requestVisit } from "../services/visitService";
 
 const requestVisit = async (data: any) => {
@@ -18,7 +18,7 @@ const requestVisit = async (data: any) => {
       include: { visitor: true }, 
     });
 
-    sendNotification(visit.visitorId, "Your visit has been approved!");
+    // sendNotification(visit.visitorId, "Your visit has been approved!");
     sendEmail(visit.visitor.email, "Visit Approved", "Your visit request has been approved.");
     sendSMS(visit.visitor.phone, "Your visit has been approved!");
     return visit;

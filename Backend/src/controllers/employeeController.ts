@@ -56,3 +56,4 @@ export const fetchEmployees = async (_req: Request, res: Response) => {
     res.status(500).json({ message: error });
   }
 };
+
