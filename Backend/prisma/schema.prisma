@@ -1,0 +1,69 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Visitor {
+  id        Int       @id @default(autoincrement())
+  fullName  String
+  email     String
+  phone     String
+  company   String?
+  photoUrl  String?
+  visits    Visit[]
+  events    Event[]   @relation("EventVisitors") // Added relation field
+}
+
+model Employee {
+  id         Int       @id @default(autoincrement())
+  fullName   String
+  email      String    @unique
+  password   String    @default("default_password")
+  department String
+  visits     Visit[]
+  events     Event[]   @relation("EmployeeEvents")
+}
+
+model Visit {
+  id          Int       @id @default(autoincrement())
+  visitorId   Int
+  employeeId  Int
+  purpose     String
+  checkIn     DateTime
+  checkOut    DateTime?
+  status      VisitStatus  @default(PENDING)
+  visitor     Visitor   @relation(fields: [visitorId], references: [id])
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model Event {
+  id        Int        @id @default(autoincrement())
+  title     String
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  location  String
+  hostId    Int
+  host      Employee   @relation("EmployeeEvents", fields: [hostId], references: [id])
+  visitors  Visitor[]  @relation("EventVisitors") // Keep relation field
+}
+ 
+model Admin{
+  id   Int        @id @default(autoincrement())
+  fullName String
+  email  String   @unique
+  password String
+}
+
+enum VisitStatus {
+  PENDING
+  APPROVED
+  DENIED
+  CHECKED_IN
+  CHECKED_OUT
+  OVERSTAY
+}
