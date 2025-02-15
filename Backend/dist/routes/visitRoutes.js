@@ -11,4 +11,8 @@ const router = express_1.default.Router();
 router.post("/request", visitController_1.createVisitRequest);
 router.put("/:visitId/approve", authMiddleware_1.authenticate, (0, authMiddleware_1.authorizeRole)(["EMPLOYEE"]), visitController_2.approveVisitRequest);
 router.put("/:visitId/deny", authMiddleware_1.authenticate, (0, authMiddleware_1.authorizeRole)(["EMPLOYEE"]), visitController_2.denyVisitRequest);
+// router.post('/visits/:id/check-in', authenticate, checkInVisit);
+// router.post('/visits/:id/check-out', authenticate, checkOutVisit);
+// router.get('/visits/active', authenticate, getActiveVisits);
+// router.get('/visits/status/:id', getVisitStatus);
 exports.default = router;
