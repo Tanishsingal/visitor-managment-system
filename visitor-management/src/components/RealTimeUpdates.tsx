@@ -1,82 +1,83 @@
 
-// // src/components/RealTimeUpdates.tsx
-// import { useEffect, useState } from 'react';
-// import { useWebSocket } from '../hooks/useWebSocket';
+// // src/components/notifications/RealTimeUpdates.tsx
+// import { useEffect } from 'react';
+// import { wsService } from '../services/websocketService';
+// // import { useAuth } from '../../hooks/useAuth';
 // import toast from 'react-hot-toast';
-
-// interface UpdateData {
-//   type: 'visit' | 'notification' | 'alert';
-//   message: string;
-//   data: any;
-// }
+// import { useAuth } from '../hooks/useAuth';
 
 // export const RealTimeUpdates = () => {
-//   const [updates, setUpdates] = useState<UpdateData[]>([]);
+//   const { user } = useAuth();
 
-//   useWebSocket('update', (data: UpdateData) => {
-//     setUpdates(prev => [data, ...prev].slice(0, 10));
-//     showNotification(data);
-//   });
+//   useEffect(() => {
+//     if (!user) return;
 
-//   const showNotification = (update: UpdateData) => {
-//     switch (update.type) {
-//       case 'visit':
-//         toast.success(update.message);
-//         break;
-//       case 'notification':
-//         toast(update.message);
-//         break;
-//       case 'alert':
-//         toast.error(update.message);
-//         break;
-//     }
-//   };
+//     const handleVisitUpdate = (data: {
+//       type: string;
+//       visitId: number;
+//       visitorName: string;
+//       status: string;
+//     }) => {
+//       switch (data.type) {
+//         case 'CHECK_IN':
+//           toast.success(`${data.visitorName} has checked in`);
+//           break;
+//         case 'CHECK_OUT':
+//           toast.success(`${data.visitorName} has checked out`);
+//           break;
+//         case 'VISIT_REQUEST':
+//           toast.success(`New visit request from ${data.visitorName}`);
+//           break;
+//         case 'VISIT_APPROVED':
+//           toast.success(`Visit request approved for ${data.visitorName}`);
+//           break;
+//         case 'VISIT_DENIED':
+//           toast.error(`Visit request denied for ${data.visitorName}`);
+//           break;
+//       }
+//     };
 
-//   return null; // This component just handles real-time updates
+//     wsService.subscribe('visitUpdate', handleVisitUpdate);
+//     return () => wsService.unsubscribe('visitUpdate', handleVisitUpdate);
+//   }, [user]);
+
+//   return null;
 // };
 
-
-// src/components/notifications/RealTimeUpdates.tsx
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { wsService } from '../services/websocketService';
-// import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 
 export const RealTimeUpdates = () => {
   const { user } = useAuth();
 
+  const handleVisitUpdate = useCallback(
+    (data: {
+      type: 'CHECK_IN' | 'CHECK_OUT' | 'VISIT_REQUEST' | 'VISIT_APPROVED' | 'VISIT_DENIED';
+      visitId: number;
+      visitorName: string;
+    }) => {
+      const messages = {
+        CHECK_IN: `${data.visitorName} has checked in`,
+        CHECK_OUT: `${data.visitorName} has checked out`,
+        VISIT_REQUEST: `New visit request from ${data.visitorName}`,
+        VISIT_APPROVED: `Visit request approved for ${data.visitorName}`,
+        VISIT_DENIED: `Visit request denied for ${data.visitorName}`,
+      };
+
+      const notify = data.type === 'VISIT_DENIED' ? toast.error : toast.success;
+      notify(messages[data.type]);
+    },
+    []
+  );
+
   useEffect(() => {
     if (!user) return;
 
-    const handleVisitUpdate = (data: {
-      type: string;
-      visitId: number;
-      visitorName: string;
-      status: string;
-    }) => {
-      switch (data.type) {
-        case 'CHECK_IN':
-          toast.success(`${data.visitorName} has checked in`);
-          break;
-        case 'CHECK_OUT':
-          toast.success(`${data.visitorName} has checked out`);
-          break;
-        case 'VISIT_REQUEST':
-          toast.success(`New visit request from ${data.visitorName}`);
-          break;
-        case 'VISIT_APPROVED':
-          toast.success(`Visit request approved for ${data.visitorName}`);
-          break;
-        case 'VISIT_DENIED':
-          toast.error(`Visit request denied for ${data.visitorName}`);
-          break;
-      }
-    };
-
     wsService.subscribe('visitUpdate', handleVisitUpdate);
     return () => wsService.unsubscribe('visitUpdate', handleVisitUpdate);
-  }, [user]);
+  }, [user, handleVisitUpdate]);
 
   return null;
 };

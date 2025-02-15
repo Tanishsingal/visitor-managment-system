@@ -88,18 +88,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedUser = localStorage.getItem('user');
     
     if (token && savedUser) {
-      try {
+        try {
         setUser(JSON.parse(savedUser));
-      } catch (error) {
+    } catch (error) {
         // If there's an error parsing the user data, clear storage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     }
     setIsLoading(false);
-  }, []);
+}, []);
 
-  const login = (token: string, userData: User) => {
+
+const login = (token: string, userData: User) => {
+      console.log(token);
+      console.log(user);
+      alert(token)
+
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);

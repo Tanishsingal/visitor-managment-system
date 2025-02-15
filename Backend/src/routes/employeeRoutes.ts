@@ -20,5 +20,7 @@ const router = express.Router();
 router.post("/register", createEmployee);
 router.post("/login", login);
 router.get("/", authenticate, authorizeRole(["ADMIN"]), fetchEmployees);
+// router.put('/:id', updateEmployee);
+// router.delete('/:id', deleteEmployee);
 
 export default router;

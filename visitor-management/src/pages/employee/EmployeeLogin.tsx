@@ -181,8 +181,12 @@ export const EmployeeLogin = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
+        console.log(data);
       const response = await api.post('/employees/login', data);
       const { token, user } = response.data;
+      console.log(token)
+      console.log(user);
+      
       login(token, { ...user, role: 'EMPLOYEE' });
       toast.success('Login successful!');
       navigate('/employee/dashboard');

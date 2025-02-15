@@ -13,7 +13,8 @@ exports.denyVisitRequest = exports.approveVisitRequest = exports.createVisitRequ
 const db_1 = require("../db");
 const client_1 = require("@prisma/client");
 const emailService_1 = require("../services/emailService");
-const smsService_1 = require("../services/smsService");
+// import { sendSMS } from "../services/smsService";
+// import { io } from '../services/websocketService';
 // import { sendNotification } from "../services/webSocketService";
 // import { requestVisit } from "../services/visitService";
 const requestVisit = (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -27,7 +28,7 @@ const approveVisit = (visitId) => __awaiter(void 0, void 0, void 0, function* ()
     });
     // sendNotification(visit.visitorId, "Your visit has been approved!");
     (0, emailService_1.sendEmail)(visit.visitor.email, "Visit Approved", "Your visit request has been approved.");
-    (0, smsService_1.sendSMS)(visit.visitor.phone, "Your visit has been approved!");
+    // sendSMS(visit.visitor.phone, "Your visit has been approved!");
     return visit;
 });
 const denyVisit = (visitId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -68,3 +69,104 @@ const denyVisitRequest = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.denyVisitRequest = denyVisitRequest;
+// export const getVisitById = async (req: Request, res: Response) => {
+//   try {
+//     const visit = await db.visit.findUnique({
+//       where: { id: Number(req.params.id) },
+//       include: {
+//         visitor: true,
+//         employee: true
+//       }
+//     });
+//     if (!visit) {
+//       return res.status(404).json({ message: 'Visit not found' });
+//     }
+//     res.json(visit);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to fetch visit' });
+//   }
+// };
+// export const checkInVisit = async (req: Request, res: Response) => {
+//   try {
+//     const visit = await db.visit.update({
+//       where: { id: Number(req.params.id) },
+//       data: {
+//         status: 'CHECKED_IN',
+//         checkIn: new Date()
+//       },
+//       include: {
+//         visitor: true,
+//         employee: true
+//       }
+//     });
+//     // Emit real-time update
+//     io.emit('visitUpdate', { type: 'CHECK_IN', visit });
+//     // Notify employee
+//     await sendEmail(
+//       visit.employee.email,
+//       'Visitor Check-in',
+//       `${visit.visitor.fullName} has checked in for their visit.`
+//     );
+//     res.json(visit);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to check in' });
+//   }
+// };
+// export const checkOutVisit = async (req: Request, res: Response) => {
+//   try {
+//     const visit = await db.visit.update({
+//       where: { id: Number(req.params.id) },
+//       data: {
+//         status: 'CHECKED_OUT',
+//         checkOut: new Date()
+//       },
+//       include: {
+//         visitor: true,
+//         employee: true
+//       }
+//     });
+//     io.emit('visitUpdate', { type: 'CHECK_OUT', visit });
+//     res.json(visit);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to check out' });
+//   }
+// };
+// export const getActiveVisits = async (req: Request, res: Response) => {
+//   try {
+//     const visits = await db.visit.findMany({
+//       where: {
+//         status: 'CHECKED_IN'
+//       },
+//       include: {
+//         visitor: true,
+//         employee: true
+//       },
+//       orderBy: {
+//         checkIn: 'desc'
+//       }
+//     });
+//     res.json(visits);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to fetch active visits' });
+//   }
+// };
+// export const getVisitsByStatus = async (req: Request, res: Response) => {
+//   try {
+//     const { status } = req.query;
+//     const visits = await db.visit.findMany({
+//       where: status !== 'all' ? {
+//         status: status as VisitStatus
+//       } : undefined,
+//       include: {
+//         visitor: true,
+//         employee: true
+//       },
+//       orderBy: {
+//         checkIn: 'desc'
+//       }
+//     });
+//     res.json(visits);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to fetch visits' });
+//   }
+// };

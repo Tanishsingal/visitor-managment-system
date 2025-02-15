@@ -19,8 +19,8 @@ const registerEmployee = async (data: any) => {
     const employee = await db.employee.findUnique({ where: { email } });
     if (!employee) throw new Error("Employee not found");
   
-    // const isMatch = await bcrypt.compare(password, employee.password);
-    // if (!isMatch) throw new Error("Invalid credentials");
+    const isMatch = await bcrypt.compare(password, employee.password);
+    if (!isMatch) throw new Error("Invalid credentials");
   
     return jwt.sign({ id: employee.id, role: "employee" }, SECRET_KEY, { expiresIn: "1d" });
   };

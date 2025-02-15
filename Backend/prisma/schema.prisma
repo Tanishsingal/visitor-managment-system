@@ -59,6 +59,8 @@ model Admin{
   password String
 }
 
+
+
 enum VisitStatus {
   PENDING
   APPROVED
