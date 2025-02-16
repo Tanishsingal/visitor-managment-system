@@ -1,6 +1,7 @@
 # Visitor Management System
 
 A modern, full-stack application for managing visitor access, check-ins, and employee notifications.
+![Visitor Management](https://ibb.co/SqpvqFJ))
 
 ## 🚀 Features
 
