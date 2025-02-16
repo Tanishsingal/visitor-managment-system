@@ -1,158 +1,230 @@
-// vistitor  -> req us 
-// host emp -> vistor send res either accept /reject  
-// accept->mail 
-// vistor with pass then done
+# Visitor Management System
 
-// admin 
-// host emp
-// visitor ->user
-//user
-// event
+A modern, full-stack application for managing visitor access, check-ins, and employee notifications.
 
+## 🚀 Features
 
+### Visitor Management
+- Visitor registration
+- QR code-based check-in/check-out
+- Visit status tracking
+- Real-time notifications
 
+### Employee Portal
+- Visit request approval/denial
+- Real-time visitor notifications
+- Visit history tracking
+- Department-wise analytics
 
-here is my backend file :
-server.ts->
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
-import morgan from "morgan";
-import visitorRoutes from "./routes/visitorRoutes";
-import employeeRoutes from "./routes/employeeRoutes";
-import visitRoutes from "./routes/visitRoutes";
-import eventRoutes from "./routes/eventRoutes";
-import adminRoutes from "./routes/adminRoutes";
+### Admin Dashboard
+- Employee management
+- Visit analytics
+- System monitoring
+- Report generation
 
-dotenv.config();
-const app = express();
+## 🛠️ Tech Stack
 
-app.use(cors());
-app.use(express.json());
-app.use(cookieParser());
-app.use(morgan("dev"));
+### Frontend
+- React with TypeScript
+- Tailwind CSS for styling
+- React Router for navigation
+- Axios for API requests
+- Chart.js for analytics
+- WebSocket for real-time updates
 
-app.use("/api/visitors", visitorRoutes);
-app.use("/api/employees", employeeRoutes);
-app.use("/api/visits", visitRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/admin", adminRoutes);
+### Backend
+- Node.js with Express
+- TypeScript
+- Prisma ORM
+- PostgreSQL database
+- JWT authentication
+- WebSocket for real-time communication
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+## 📦 Installation
 
-db.ts->
-import { PrismaClient } from "@prisma/client";
+### Prerequisites
+- Node.js (v14 or higher)
+- PostgreSQL
+- npm or yarn
 
-export const db= new PrismaClient()
-routes folder:
-adminRoutes.ts->
-import express from "express";
-import { createAdmin, adminLogin } from "../controllers/adminController";
-const router = express.Router();
+### Backend Setup
+```bash
+# Clone the repository
+git clone <repository-url>
 
-router.post("/register", createAdmin);
-router.post("/login", adminLogin);
+# Navigate to backend directory
+cd backend
 
-export default router;
-employeeRoute.ts->
+# Install dependencies
+npm install
 
-import express from "express";
-import { createEmployee, login, fetchEmployees } from "../controllers/employeeController";
-import { authenticate, authorizeRole } from "../middleware/authMiddleware";
-const router = express.Router();
+# Set up environment variables
+cp .env.example .env
+# Update .env with your database credentials and other configurations
 
-router.post("/register", createEmployee);
-router.post("/login", login);
-router.get("/", authenticate, authorizeRole(["ADMIN"]), fetchEmployees);
+# Run Prisma migrations
+npx prisma migrate dev
 
-export default router;
-eventRoutes.ts->
-import express from "express";
-import { addEvent, getEvents } from "../controllers/eventController";
-const router = express.Router();
+# Start the server
+npm run dev
+```
 
-router.post("/create", addEvent);
-router.get("/", getEvents);
+### Frontend Setup
+```bash
+# Navigate to frontend directory
+cd frontend
 
-export default router;
-visitorRoutes.ts->
+# Install dependencies
+npm install
 
-import express from "express";
-import { createVisitor, fetchVisitors } from "../controllers/visitorController";
-const router = express.Router();
+# Set up environment variables
+cp .env.example .env
+# Update .env with your backend API URL
 
-router.post("/register", createVisitor);
-router.get("/", fetchVisitors);
+# Start the development server
+npm run dev
+```
 
-export default router;
+## 💾 Environment Variables
 
-visitRoues.ts->
-import express from "express";
-import { createVisitRequest } from "../controllers/visitController";
-import { approveVisitRequest, denyVisitRequest } from "../controllers/visitController";
-import { authenticate, authorizeRole } from "../middleware/authMiddleware";
-const router = express.Router();
+### Backend
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+JWT_SECRET="your-secret-key"
+PORT=5000
+FRONTEND_URL="http://localhost:5173"
+```
 
-router.post("/request", createVisitRequest);
+### Frontend
+```env
+VITE_API_URL="http://localhost:5000/api"
+```
 
-router.put("/:visitId/approve", authenticate, authorizeRole(["EMPLOYEE"]), approveVisitRequest);
-router.put("/:visitId/deny", authenticate, authorizeRole(["EMPLOYEE"]), denyVisitRequest);
-
-export default router;
-middleware folder->
-authMiddleware.ts->
-import { Request, Response, NextFunction, RequestHandler } from "express";
-import jwt from "jsonwebtoken";
-
-// Define the user interface
-interface JwtPayload {
-    id: number;
-    role: string;
+## 🗄️ Database Schema
+```prisma
+model Visitor {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  email     String
+  phone     String
+  company   String?
+  photoUrl  String?
+  visits    Visit[]
 }
 
-// Extend Request type
-declare global {
-    namespace Express {
-        interface Request {
-            user?: JwtPayload;
-        }
-    }
+model Employee {
+  id          Int      @id @default(autoincrement())
+  fullName    String
+  email       String   @unique
+  password    String
+  department  String
+  visits      Visit[]
 }
 
-const SECRET_KEY = process.env.JWT_SECRET || "mysecretkey";
+model Visit {
+  id          Int         @id @default(autoincrement())
+  visitorId   Int
+  employeeId  Int
+  purpose     String
+  checkIn     DateTime
+  checkOut    DateTime?
+  status      VisitStatus @default(PENDING)
+  visitor     Visitor     @relation(fields: [visitorId], references: [id])
+  employee    Employee    @relation(fields: [employeeId], references: [id])
+}
 
-export const authenticate: RequestHandler = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-): void => {
-    const token = req.headers.authorization?.split(' ')[1];
+enum VisitStatus {
+  PENDING
+  APPROVED
+  DENIED
+  CHECKED_IN
+  CHECKED_OUT
+  OVERSTAY
+}
+```
 
-    if (!token) {
-        res.status(401).json({ message: "Authorization token is required." });
-        return;
-    }
+## 🔐 API Endpoints
 
-    try {
-        const decoded = jwt.verify(token, SECRET_KEY) as JwtPayload;
-        req.user = decoded;
-        next();
-    } catch (error) {
-        res.status(403).json({ message: "Invalid or expired token." });
-        return;
-    }
-};
+### Authentication
+- `POST /api/employees/login`
+- `POST /api/admin/login`
 
-export const authorizeRole = (roles: string[]): RequestHandler => {
-    return (req: Request, res: Response, next: NextFunction): void => {
-        if (!req.user || !req.user.role || !roles.includes(req.user.role)) {
-            res.status(403).json({ message: "You do not have the required permissions." });
-            return;
-        }
+### Visitors
+- `POST /api/visitors/register`
+- `GET /api/visitors`
 
-        next();
-    };
-};
+### Visits
+- `POST /api/visits/request`
+- `PUT /api/visits/:id/approve`
+- `PUT /api/visits/:id/deny`
+- `POST /api/visits/:id/check-in`
+- `POST /api/visits/:id/check-out`
+- `GET /api/visits/active`
+
+### Analytics
+- `GET /api/analytics/dashboard`
+- `GET /api/analytics/department/:department`
+- `GET /api/analytics/date/:date`
+
+## 📱 Screenshots
+
+[Add screenshots of your application here]
+
+## 🔒 Security Features
+- JWT authentication
+- Role-based access control
+- Password hashing
+- Input validation
+- XSS protection
+- CORS configuration
+
+## 🚀 Deployment
+
+### Backend
+```bash
+# Build the application
+npm run build
+
+# Start production server
+npm start
+```
+
+### Frontend
+```bash
+# Build the application
+npm run build
+
+# The build folder is ready to be deployed
+```
+
+## 📈 Future Improvements
+- Multi-language support
+- Advanced analytics dashboard
+- Mobile application
+- Visitor face recognition
+- Integration with access control systems
+- Automated email reminders
+- Visitor blacklist management
+
+## 👥 Contributing
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+This project is licensed under the MIT License - see the `LICENSE.md` file for details
+
+## 👏 Acknowledgments
+- Tailwind CSS
+- React
+- Node.js
+- Prisma
+- Chart.js
+
+## 📞 Contact
+Your Name - tanishsingal245@gmail.com
+
+Project Link: [GitHub Repository](https://github.com/Tanishsingal/visitor-managment-system)
 
